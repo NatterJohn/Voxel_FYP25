@@ -6,21 +6,13 @@ using UnityEngine;
 public class WorldManager : MonoBehaviour
 {
     public Material worldMaterial;
-    public VoxelColor[] WorldColors;
+
     private Container container;
 
+
+    // Start is called before the first frame update
     void Start()
     {
-        if (_instance != null)
-        {
-            if (_instance != this)
-                Destroy(this);
-        }
-        else
-        {
-            _instance = this;
-        }
-
         GameObject cont = new GameObject("Container");
         cont.transform.parent = transform;
         container = cont.AddComponent<Container>();
@@ -38,19 +30,15 @@ public class WorldManager : MonoBehaviour
             }
         }
 
+
         container.GenerateMesh();
         container.UploadMesh();
     }
 
-    private static WorldManager _instance;
-
-    public static WorldManager Instance
+    // Update is called once per frame
+    void Update()
     {
-        get
-        {
-            if (_instance == null)
-                _instance = FindObjectOfType<WorldManager>();
-            return _instance;
-        }
+
     }
+
 }
