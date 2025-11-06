@@ -5,6 +5,7 @@ using UnityEngine;
 [RequireComponent(typeof(MeshFilter), typeof(MeshRenderer))]
 public class MarchingSpheres : MonoBehaviour
 {
+    //float radius = 8.5f;
     [SerializeField] private int width = 30;
     [SerializeField] private int height = 10;
 
@@ -57,6 +58,7 @@ public class MarchingSpheres : MonoBehaviour
 
     private void SetHeights()
     {
+
         heights = new float[width + 1, height + 1, width + 1];
 
         for (int x = 0; x < width + 1; x++)

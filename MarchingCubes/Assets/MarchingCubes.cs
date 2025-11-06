@@ -5,7 +5,7 @@ using UnityEngine;
 [RequireComponent(typeof(MeshFilter), typeof(MeshRenderer))]
 public class MarchingCubes : MonoBehaviour
 {
-    [SerializeField] private int width = 30;
+    [SerializeField] private int width = 20;
     [SerializeField] private int height = 10;
 
     [SerializeField] float resolution = 1;
