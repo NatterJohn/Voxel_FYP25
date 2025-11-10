@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -5,17 +6,14 @@ using UnityEngine;
 [RequireComponent(typeof(MeshFilter), typeof(MeshRenderer))]
 public class MarchingSpheres : MonoBehaviour
 {
-    //float radius = 8.5f;
-    [SerializeField] private int width = 30;
-    [SerializeField] private int height = 10;
+    public Material sphereMaterial;
 
+    private Container container;
+    [SerializeField] private int width = 25;
+    [SerializeField] private int height = 26;
     [SerializeField] float resolution = 1;
-    [SerializeField] float noiseScale = 1;
 
     [SerializeField] private float heightTresshold = 0.5f;
-
-    [SerializeField] bool visualizeNoise;
-    [SerializeField] bool use3DNoise;
 
     private List<Vector3> vertices = new List<Vector3>();
     private List<int> triangles = new List<int>();
@@ -38,7 +36,7 @@ public class MarchingSpheres : MonoBehaviour
     {
         while (true)
         {
-            SetHeights();
+            generateVoxels();
             MarchCubes();
             SetMesh();
             yield return new WaitForSeconds(1f);
@@ -55,58 +53,38 @@ public class MarchingSpheres : MonoBehaviour
 
         meshFilter.mesh = mesh;
     }
-
-    private void SetHeights()
+    
+    private void generateVoxels()
     {
-
         heights = new float[width + 1, height + 1, width + 1];
 
-        for (int x = 0; x < width + 1; x++)
+        // Sphere parameters
+        GameObject sphereContainer = new GameObject("Container");
+        sphereContainer.transform.parent = transform;
+        container = sphereContainer.AddComponent<Container>();
+        container.Initialize(sphereMaterial, Vector3.zero);
+        float radiusSphere = 8.5f;
+        Vector3 centerSphere = new Vector3(radiusSphere, radiusSphere, radiusSphere);
+
+        for (int x = 0; x < 17; x++)
         {
-            for (int y = 0; y < height + 1; y++)
+            for (int y = 0; y < 17; y++)
             {
-                for (int z = 0; z < width + 1; z++)
+                for (int z = 0; z < 17; z++)
                 {
-                    if (use3DNoise)
+                    Vector3 positionOfVoxel = new Vector3(x, y, z);
+                    float distanceFromCenter = Vector3.Distance(positionOfVoxel, centerSphere);
+                    if (distanceFromCenter <= radiusSphere)
                     {
-                        float currentHeight = PerlinNoise3D((float)x / width * noiseScale, (float)y / height * noiseScale, (float)z / width * noiseScale);
-
-                        heights[x, y, z] = currentHeight;
-                    }
-                    else
-                    {
-                        float currentHeight = height * Mathf.PerlinNoise(x * noiseScale, z * noiseScale);
-                        float distToSufrace;
-
-                        if (y <= currentHeight - 0.5f)
-                            distToSufrace = 0f;
-                        else if (y > currentHeight + 0.5f)
-                            distToSufrace = 1f;
-                        else if (y > currentHeight)
-                            distToSufrace = y - currentHeight;
-                        else
-                            distToSufrace = currentHeight - y;
-
-                        heights[x, y, z] = distToSufrace;
+                        container[positionOfVoxel] = new Voxel() { ID = 1 };
                     }
                 }
             }
         }
+
+        container.GenerateMesh();
+        container.UploadMesh();
     }
-
-    private float PerlinNoise3D(float x, float y, float z)
-    {
-        float xy = Mathf.PerlinNoise(x, y);
-        float xz = Mathf.PerlinNoise(x, z);
-        float yz = Mathf.PerlinNoise(y, z);
-
-        float yx = Mathf.PerlinNoise(y, x);
-        float zx = Mathf.PerlinNoise(z, x);
-        float zy = Mathf.PerlinNoise(z, y);
-
-        return (xy + xz + yz + yx + zx + zy) / 6;
-    }
-
     private int GetConfigIndex(float[] cubeCorners)
     {
         int configIndex = 0;
@@ -180,14 +158,13 @@ public class MarchingSpheres : MonoBehaviour
             }
         }
     }
-
     private void OnDrawGizmosSelected()
     {
-        if (!visualizeNoise || !Application.isPlaying)
+        /*if (!visualizeNoise || !Application.isPlaying)
         {
             return;
         }
-
+        */
         for (int x = 0; x < width + 1; x++)
         {
             for (int y = 0; y < height + 1; y++)
